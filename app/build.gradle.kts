@@ -37,6 +37,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // 이 파일을 hilt-compiler와 dagger-compiler가 빌드 중에 동일한 파일을 제공하려고 함.
+    // 충돌로 인해 빌드 실패 -> 해당 파일을 APK에 포함되지 않도록 제외함으로써 해결
+    packaging {
+        resources {
+            excludes.add("META-INF/gradle/incremental.annotation.processors")
+        }
+    }
 }
 
 dependencies {
@@ -49,6 +57,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.compose.jvmstubs)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +65,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.compiler)
 }
