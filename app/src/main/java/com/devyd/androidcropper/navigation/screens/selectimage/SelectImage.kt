@@ -1,5 +1,6 @@
 package com.devyd.androidcropper.navigation.screens.selectimage
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +20,8 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun SelectImage(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onImageLoaded : (Bitmap) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -33,9 +35,10 @@ fun SelectImage(
         }
     }
 
+
     LaunchedEffect(key1 = imageUri) {
         imageUri?.let {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 BitmapUtil.getResizedBitmap(context, it).onEach {
                     resizedBitmapStatus = it
                 }.collect()
@@ -43,7 +46,11 @@ fun SelectImage(
         }
     }
 
-    Text(text="SelectImage")
 
-
+    SelectImageLayout(
+        modifier = modifier,
+        resizedBitmapStatus = resizedBitmapStatus,
+        onImageSelected = onImageSelected,
+        onImageLoaded = onImageLoaded
+    )
 }

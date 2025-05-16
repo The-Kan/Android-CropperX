@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import com.devyd.androidcropper.bitmap.BitmapStatus
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 
 object BitmapUtil {
@@ -63,7 +64,8 @@ object BitmapUtil {
         context: Context,
         uri: Uri
     ) = flow {
-        emit(BitmapStatus.None)
+        emit(BitmapStatus.Decoding)
+        delay(2000) // just Test progress, It will be removed
         val decodedBitmap = resizeBitmapFromRes(context, uri)
         if (decodedBitmap != null) {
             emit(BitmapStatus.Success(decodedBitmap))
