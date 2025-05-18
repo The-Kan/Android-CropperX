@@ -5,38 +5,50 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.devyd.androidcropper.navigation.screens.cropperx.CropperX
 import com.devyd.androidcropper.navigation.screens.selectimage.SelectImage
 import com.devyd.androidcropper.navigation.screens.showimage.ShowImage
+import com.devyd.androidcropper.state.ShowImageState
+import com.devyd.androidcropper.viewmodel.NaviViewModel
 
 @Composable
 fun CropNavigation() {
 
     val navController = rememberNavController()
-
-    val navigateSelectImage = remember {
-        { navController.navigate(NavList.SELECT_IMAGE) }
+    val naviViewModel = hiltViewModel<NaviViewModel>()
+    val navigateSelectImage = remember<() -> Unit> {
+        {
+            naviViewModel.reset()
+            navController.navigate(NavList.SELECT_IMAGE)
+        }
     }
 
-    val navigateShowImage = remember {
-        { navController.navigate(NavList.SHOW_IMAGE) }
+    val navigateCropperX = remember<(ShowImageState) -> Unit> {
+        {
+            naviViewModel.updateStacksFromShowImageState(it)
+            navController.navigate(NavList.CROPPER_X)
+        }
     }
 
-    val navigateCropperX = remember {
-        { navController.navigate(NavList.CROPPER_X) }
-    }
-
-    val navigateBackPress = remember {
+    val navigateBackPress = remember<() -> Unit> {
         { navController.navigateUp() }
     }
 
-    val onImageLoaded = remember <(Bitmap) -> Unit> { {
-        // 어딘가에 Bitmap을 저장. 뷰모델?
-        navController.navigate(NavList.CROPPER_X)
-    }}
+
+    val onImageLoaded = remember<(Bitmap) -> Unit> {
+        {
+            naviViewModel.addToStack(
+                bitmap = it.copy(Bitmap.Config.ARGB_8888, false)
+            )
+            navController.navigate(NavList.SHOW_IMAGE)
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -55,7 +67,12 @@ fun CropNavigation() {
         composable(
             route = NavList.SHOW_IMAGE
         ) {
-            ShowImage()
+            ShowImage(
+                initialState = ShowImageState(naviViewModel.undoStack, naviViewModel.redoStack),
+                navigateCropperX = navigateCropperX,
+                navigateSelectImage = navigateSelectImage,
+                navigateBackPress = navigateBackPress
+            )
         }
 
         composable(
