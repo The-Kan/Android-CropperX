@@ -222,12 +222,4 @@ fun ShowImageLayout(
         }
 
     }
-
-
-    Image(
-        modifier = Modifier.fillMaxSize(),
-        bitmap = bitmap.asImageBitmap(),
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-    )
 }
