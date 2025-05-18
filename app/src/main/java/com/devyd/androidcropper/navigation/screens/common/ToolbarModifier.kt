@@ -15,3 +15,12 @@ fun ConstraintLayoutScope.TopToolbarModifier(
     width = Dimension.matchParent
     height = Dimension.wrapContent
 }
+
+@Composable
+fun ConstraintLayoutScope.BottomToolbarModifier(
+    constrainRef: ConstrainedLayoutReference
+) = Modifier.constrainAs(constrainRef) {
+    bottom.linkTo(parent.bottom)
+    width = Dimension.matchParent
+    height = Dimension.wrapContent
+}

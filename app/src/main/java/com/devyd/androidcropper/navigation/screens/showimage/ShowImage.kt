@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.devyd.androidcropper.R
 import com.devyd.androidcropper.navigation.screens.common.AnimatedToolbar
+import com.devyd.androidcropper.navigation.screens.common.BottomToolbarModifier
 import com.devyd.androidcropper.navigation.screens.common.TopToolbarModifier
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BOTTOM_TOOLBAR_HEIGHT_SMALL
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarEvent
@@ -102,10 +103,10 @@ fun ShowImageLayout(
     bitmap: Bitmap,
     bottomToolbarEvent: (BottomToolbarEvent) -> Unit,
     navigateSelectImage: () -> Unit,
-    isUndoPossible : Boolean,
-    isRedoPossible : Boolean,
-    undo : () -> Unit,
-    redo : () -> Unit
+    isUndoPossible: Boolean,
+    isRedoPossible: Boolean,
+    undo: () -> Unit,
+    redo: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -170,7 +171,8 @@ fun ShowImageLayout(
 
         AnimatedToolbar(
             modifier = TopToolbarModifier(topToolbar),
-            visible = toolbarVisible)
+            visible = toolbarVisible
+        )
         {
             ShowImageTopToolBar(
                 modifier = Modifier,
@@ -180,7 +182,7 @@ fun ShowImageLayout(
                 undo = undo,
                 redo = redo,
                 save = onSaveClicked,
-                close =  onCloseClicked,
+                close = onCloseClicked,
                 toolBarHeight = topToolbarHeight,
             )
         }
@@ -189,23 +191,34 @@ fun ShowImageLayout(
             bitmap.width.toFloat() / bitmap.height.toFloat()
         }
 
-        Box(modifier = Modifier
-            .constrainAs(image) {
-               top.linkTo(parent.top)
-               bottom.linkTo(parent.bottom)
-               start.linkTo(parent.start)
-               end.linkTo(parent.end)
-               width = Dimension.wrapContent
-               height = Dimension.wrapContent
-            }
-            .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
-            .aspectRatio(aspectRatio)
+        Box(
+            modifier = Modifier
+                .constrainAs(image) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    width = Dimension.wrapContent
+                    height = Dimension.wrapContent
+                }
+                .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
+                .aspectRatio(aspectRatio)
         ) {
-            Image(modifier = Modifier.fillMaxSize(),
+            Image(
+                modifier = Modifier.fillMaxSize(),
                 bitmap = bitmap.asImageBitmap(),
                 contentScale = ContentScale.Fit,
                 contentDescription = null,
-                alpha = 1f)
+                alpha = 1f
+            )
+        }
+
+        AnimatedToolbar(
+            modifier = BottomToolbarModifier(bottomToolbar),
+            visible = toolbarVisible
+        ) {
+
+
         }
 
     }
