@@ -2,4 +2,7 @@
     <string name="app_name">AndroidCropper</string>
 
     <string name="pick_image">Pick Image</string>
+
+    <string name="image_saved_in_gallery_app">Image saved in Gallery App</string>
+    <string name="failed_to_save_image">Failed to Save Image</string>
 </resources>

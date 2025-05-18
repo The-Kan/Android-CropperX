@@ -22,6 +22,7 @@ fun CropNavigation() {
 
     val navController = rememberNavController()
     val naviViewModel = hiltViewModel<NaviViewModel>()
+
     val navigateSelectImage = remember<() -> Unit> {
         {
             naviViewModel.reset()
@@ -71,7 +72,6 @@ fun CropNavigation() {
                 initialState = ShowImageState(naviViewModel.undoStack, naviViewModel.redoStack),
                 navigateCropperX = navigateCropperX,
                 navigateSelectImage = navigateSelectImage,
-                navigateBackPress = navigateBackPress
             )
         }
 

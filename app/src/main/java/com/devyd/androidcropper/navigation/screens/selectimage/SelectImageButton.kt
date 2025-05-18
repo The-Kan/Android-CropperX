@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.devyd.androidcropper.R
+import com.devyd.androidcropper.util.LogUtil
 
 
 @Composable
@@ -47,6 +48,7 @@ fun SelectImageButton(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
         }) { Text(text = stringResource(R.string.pick_image)) }
+
 
         Spacer(modifier = Modifier.height(10.dp))
 

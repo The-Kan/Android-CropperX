@@ -7,6 +7,8 @@ import android.net.Uri
 import com.devyd.androidcropper.bitmap.BitmapStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
+import java.io.File
+import java.io.FileOutputStream
 
 object BitmapUtil {
 
@@ -71,6 +73,12 @@ object BitmapUtil {
             emit(BitmapStatus.Success(decodedBitmap))
         } else {
             emit(BitmapStatus.Fail())
+        }
+    }
+
+    fun saveBitmapToFile(bitmap: Bitmap, file: File) {
+        FileOutputStream(file).use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
         }
     }
 }
