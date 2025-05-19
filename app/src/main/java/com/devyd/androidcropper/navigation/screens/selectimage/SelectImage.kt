@@ -13,8 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.devyd.androidcropper.bitmap.BitmapStatus
 import com.devyd.androidcropper.util.BitmapUtil
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
@@ -38,11 +41,13 @@ fun SelectImage(
 
     LaunchedEffect(key1 = imageUri) {
         imageUri?.let {
-            withContext(Dispatchers.IO) {
-                BitmapUtil.getResizedBitmap(context, it).onEach {
-                    resizedBitmapStatus = it
-                }.collect()
-            }
+            BitmapUtil.getResizedBitmap(context, it)
+                .flowOn(Dispatchers.IO)
+                .onEach { bitmapStatus -> resizedBitmapStatus = bitmapStatus }
+                .launchIn(CoroutineScope(Dispatchers.Main))
+
+
+
         }
     }
 
