@@ -33,6 +33,7 @@ import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BOTTO
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarEvent
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarItem
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarDefaultItemList
+import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.ShowImageBottomToolBar
 import com.devyd.androidcropper.navigation.screens.showimage.toptoolbar.ShowImageTopToolBar
 import com.devyd.androidcropper.navigation.screens.showimage.toptoolbar.TOP_TOOLBAR_HEIGHT_SMALL
 import com.devyd.androidcropper.state.ShowImageState
@@ -53,7 +54,7 @@ fun ShowImage(
     modifier: Modifier = Modifier,
     initialState: ShowImageState,
     navigateCropperX: (ShowImageState) -> Unit,
-    navigateSelectImage: () -> Unit,
+    navigateBackPress: () -> Unit,
 ) {
 
     val viewModel: ShowImageViewModel = hiltViewModel()
@@ -86,7 +87,7 @@ fun ShowImage(
             modifier = modifier,
             bitmap = bitmap,
             bottomToolbarEvent = bottomToolbarEvent,
-            navigateSelectImage = navigateSelectImage,
+            navigateBackPress = navigateBackPress,
             isUndoPossible = viewModel.isUndoPossible(),
             isRedoPossible = viewModel.isRedoPossible(),
             undo = viewModel::undo,
@@ -102,7 +103,7 @@ fun ShowImageLayout(
     modifier: Modifier,
     bitmap: Bitmap,
     bottomToolbarEvent: (BottomToolbarEvent) -> Unit,
-    navigateSelectImage: () -> Unit,
+    navigateBackPress: () -> Unit,
     isUndoPossible: Boolean,
     isRedoPossible: Boolean,
     undo: () -> Unit,
@@ -113,12 +114,12 @@ fun ShowImageLayout(
 
     val onCloseClicked = remember<() -> Unit> {
         {
-            navigateSelectImage()
+            navigateBackPress()
         }
     }
 
     BackHandler {
-        navigateSelectImage()
+        navigateBackPress()
     }
 
     val topToolbarHeight = TOP_TOOLBAR_HEIGHT_SMALL
@@ -217,8 +218,12 @@ fun ShowImageLayout(
             modifier = BottomToolbarModifier(bottomToolbar),
             visible = toolbarVisible
         ) {
-
-
+            ShowImageBottomToolBar(
+                modifier = Modifier,
+                bottomToolbarItemList = bottomToolbarItemList,
+                bottomToolbarHeight = bottomToolbarHeight,
+                bottomToolbarEvent = bottomToolbarEventWithAnim
+            )
         }
 
     }

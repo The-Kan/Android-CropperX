@@ -34,4 +34,12 @@ class NaviViewModel @Inject constructor(private val savedStateHandle: SavedState
         redoStack.clear()
     }
 
+    fun getCurrentBitmap() : Bitmap {
+        val bitmapStack = undoStack
+        if(bitmapStack.isEmpty()){
+            // 빈 비트맵을 리턴? 또는 에러처리.
+        }
+        return bitmapStack.peek()
+    }
+
 }

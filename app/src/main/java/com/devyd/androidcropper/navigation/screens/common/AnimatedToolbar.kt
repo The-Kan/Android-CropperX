@@ -10,7 +10,7 @@ import com.devyd.androidcropper.util.AniUtil
 fun AnimatedToolbar(
     modifier : Modifier,
     visible: Boolean,
-    content: @Composable() AnimatedVisibilityScope.() -> Unit
+    content: @Composable AnimatedVisibilityScope.() -> Unit
 ){
     AnimatedVisibility(
         modifier = modifier,
