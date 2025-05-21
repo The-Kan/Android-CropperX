@@ -67,7 +67,7 @@ object BitmapUtil {
         uri: Uri
     ) = flow {
         emit(BitmapStatus.Decoding)
-        delay(2000) // just Test progress, It will be removed
+        delay(500) // just Test progress, It will be removed
         val decodedBitmap = resizeBitmapFromRes(context, uri)
         if (decodedBitmap != null) {
             emit(BitmapStatus.Success(decodedBitmap))

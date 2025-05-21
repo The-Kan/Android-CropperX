@@ -1,6 +1,7 @@
 package com.devyd.androidcropper.navigation.screens.cropperx
 
 import android.graphics.Bitmap
+import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -156,19 +157,28 @@ fun CropperX(
                 }
                 .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
         ) {
-//            AndroidView(
-//                modifier =  Modifier,
-//                factory = { context ->
-//                    CropperXView(context = context)
-//                },
-//                update = {
-//                    cropperXView ->
-//
-//                    if(neededCrop){
-//                        // 크롭 비동기 시작
-//                    }
-//                }
-//            )
+            AndroidView(
+                modifier =  Modifier,
+                factory = { context ->
+                    CropperXView(context = context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        setImageBitmap(immutableBitmap.bitmap)
+//                        setImageCropOptions(cropImageOptions)
+//                        setOnCropImageCompleteListener(cropCompleteListener)
+
+                    }
+                },
+                update = {
+                    cropperXView ->
+
+                    if(neededCrop){
+                        // 크롭 비동기 시작
+                    }
+                }
+            )
 
         }
 
