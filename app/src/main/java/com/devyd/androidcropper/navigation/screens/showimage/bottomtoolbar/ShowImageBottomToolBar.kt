@@ -19,14 +19,14 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.devyd.androidcropper.util.ImmutableList
+import com.devyd.androidcropper.util.SizeUtil
 
-val BOTTOM_TOOLBAR_HEIGHT_SMALL = 60.dp
 
 @Composable
 fun ShowImageBottomToolBar(
     modifier: Modifier,
     bottomToolbarItemList: ImmutableList<BottomToolbarItem>,
-    bottomToolbarHeight: Dp = BOTTOM_TOOLBAR_HEIGHT_SMALL,
+    bottomToolbarHeight: Dp = SizeUtil.TOOLBAR_HEIGHT_MEDIUM,
     bottomToolbarEvent: (BottomToolbarEvent) -> Unit
 ) {
 

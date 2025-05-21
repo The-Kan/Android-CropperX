@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.devyd.androidcropper.util.SizeUtil
 
 
-val TOP_TOOLBAR_HEIGHT_SMALL = 45.dp
 
 @Composable
 fun ShowImageTopToolBar(
@@ -35,7 +35,7 @@ fun ShowImageTopToolBar(
     redo: () -> Unit,
     save: () -> Unit,
     close: () -> Unit,
-    toolBarHeight: Dp = TOP_TOOLBAR_HEIGHT_SMALL
+    toolBarHeight: Dp = SizeUtil.TOOLBAR_HEIGHT_SMALL
 ) {
     Row(
         modifier = modifier

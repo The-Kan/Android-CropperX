@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 
-class CropperXView (context : Context, attrs : AttributeSet?) : FrameLayout(context, attrs){
+class CropperXView (context : Context, attrs : AttributeSet? = null) : FrameLayout(context, attrs){
 
     private val cropperImageView: ImageView
     private val cropperControlView: ImageView

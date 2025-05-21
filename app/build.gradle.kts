@@ -75,4 +75,6 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.material.icons.extended)
+
+    implementation(project(":cropperx"))
 }

@@ -6,8 +6,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,7 +38,9 @@ fun CropNavigation() {
     }
 
     val navigateBackPress = remember<() -> Unit> {
-        { navController.navigateUp() }
+        {
+            navController.navigateUp()
+        }
     }
 
 
@@ -87,7 +87,7 @@ fun CropNavigation() {
             ShowImage(
                 initialState = ShowImageState(naviViewModel.undoStack, naviViewModel.redoStack),
                 navigateCropperX = navigateCropperX,
-                navigateBackPress = navigateBackPress,
+                navigateSelectImage = navigateSelectImage,
             )
         }
 
@@ -97,7 +97,7 @@ fun CropNavigation() {
             CropperX(
                 immutableBitmap = ImmutableBitmap(naviViewModel.getCurrentBitmap()),
                 onDoneClicked = onDoneClicked,
-                navigateBackPress =  navigateBackPress
+                navigateBackPress = navigateBackPress
             )
         }
 
