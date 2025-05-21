@@ -1,4 +1,4 @@
-package com.devyd.cropperx
+package com.devyd.cropperx.view
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
+import com.devyd.cropperx.R
 
 class CropperXView (context : Context, attrs : AttributeSet? = null) : FrameLayout(context, attrs){
 

@@ -29,11 +29,10 @@ import com.devyd.androidcropper.navigation.screens.common.TopToolbarModifier
 import com.devyd.androidcropper.navigation.screens.cropperx.bottomtoolbar.CropperXBottomToolBar
 import com.devyd.androidcropper.navigation.screens.cropperx.toptoolbar.CropperXTopToolBar
 import com.devyd.androidcropper.util.AniUtil
-import com.devyd.androidcropper.util.CropUtil
 import com.devyd.androidcropper.util.ImmutableBitmap
 import com.devyd.androidcropper.util.SizeUtil
 import com.devyd.androidcropper.util.getActivity
-import com.devyd.cropperx.CropperXView
+import com.devyd.cropperx.view.CropperXView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
