@@ -5,12 +5,14 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.net.Uri
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import com.devyd.cropperx.R
 import com.devyd.cropperx.crop.CropOptions
+import com.devyd.cropperx.util.BitmapUtils
 import kotlin.math.min
 
 class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
@@ -35,6 +37,12 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     private val mImageMatrix = Matrix()
     private val mImageInverseMatrix = Matrix()
+
+
+    private var mScaleType: ScaleType // CENTER_CROP, FIT_CENTER 같은 이미지 스케일 방식입니다.
+
+
+    private var mAutoZoomEnabled = true
 
     internal companion object {
         /**
@@ -71,10 +79,13 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
     init {
         val option = CropOptions()
 
+        mScaleType = option.scaleType
+        mAutoZoomEnabled = option.autoZoomEnabled
 
         val inflater = LayoutInflater.from(context)
         val cropperXView = inflater.inflate(R.layout.cropper_x_view, this, true)
         cropperImageView = cropperXView.findViewById(R.id.CropperImageView)
+        cropperImageView.scaleType = ImageView.ScaleType.MATRIX // Matrix 확대 적용을 위해 사용.
         cropperControlView = cropperXView.findViewById(R.id.CropperControlView)
         // setCropWindowChangeListener(this) 필요
         cropperControlView.setOption(option)
@@ -175,6 +186,7 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
             val height = getOnMeasureSpec(heightMode, heightSize, desiredHeight)
             mLayoutWidth = width
             mLayoutHeight = height
+            Log.i("Deok", "mLayoutWidth = ${mLayoutWidth}, mLayoutHeight = ${mLayoutHeight}")
             setMeasuredDimension(mLayoutWidth, mLayoutHeight)
         } else {
             setMeasuredDimension(widthSize, heightSize)
@@ -185,6 +197,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
+
+        Log.i("Deok", "left = ${left}, top = ${top}, right = ${right}, bottom = ${bottom}")
 
         if (mLayoutWidth > 0 && mLayoutHeight > 0) {
             if (originalBitmap != null) {
@@ -214,6 +228,27 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
             )
             mapImagePointsByImageMatrix()
         }
+
+        val scale = min(
+            width / BitmapUtils.getRectWidth(mImagePoints),
+            height / BitmapUtils.getRectHeight(mImagePoints),
+        )
+        if (mScaleType == ScaleType.FIT_CENTER || mScaleType == ScaleType.CENTER_INSIDE && scale < 1 ||
+            scale > 1 && mAutoZoomEnabled
+        ) {
+            // 중앙 좌표를 구하여, 중앙을 기준으로 스케일링을 적용합니다.
+            mImageMatrix.postScale(
+                scale,
+                scale,
+                BitmapUtils.getRectCenterX(mImagePoints),
+                BitmapUtils.getRectCenterY(mImagePoints),
+            )
+            mapImagePointsByImageMatrix()
+        }
+
+        cropperControlView!!.invalidate()
+
+        cropperImageView.imageMatrix = mImageMatrix
     }
 
     private fun mapImagePointsByImageMatrix() {
@@ -229,6 +264,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         // 좌하단 (0, h)
         mImagePoints[6] = 0f
         mImagePoints[7] = originalBitmap!!.height.toFloat()
+
+        Log.i("Deok", "originalBitmap!!.width = ${originalBitmap!!.width.toFloat()}, originalBitmap!!.height = ${originalBitmap!!.height.toFloat()}")
         // mapPoints()는 해당 매트릭스를 mImagePoints에 적용해서, 변환된 좌표를 직접 mImagePoints 배열에 덮어씌웁니다.
         // x,y 모두 150씩 이동시킨 네 꼭지점을 mImagePoints에 저장하라와 같은 동작.
         mImageMatrix.mapPoints(mImagePoints)
@@ -250,4 +287,5 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         cropperControlView!!.setBounds(mImagePoints, width, height)
     }
 }
+
 

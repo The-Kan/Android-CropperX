@@ -10,7 +10,7 @@ import android.util.Log
 import android.view.View
 import com.devyd.cropperx.crop.CropOptions
 import com.devyd.cropperx.crop.CropRectController
-import com.devyd.cropperx.util.BitmapBounds
+import com.devyd.cropperx.util.BitmapUtils
 import java.util.Arrays
 import kotlin.math.abs
 import kotlin.math.max
@@ -209,7 +209,6 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
     fun setCropWindowLimits(
         maxWidth: Float,
         maxHeight: Float,
-
     ) {
         cropRectController
             .setCropWindowLimits(maxWidth, maxHeight)
@@ -233,10 +232,10 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
 
     private fun initCropWindow() {
         // 4군데 좌표로부터 크기 제한을 얻음.
-        val leftLimit = max(BitmapBounds.left(mBoundsPoints), 0f)
-        val topLimit = max(BitmapBounds.top(mBoundsPoints), 0f)
-        val rightLimit = min(BitmapBounds.right(mBoundsPoints), width.toFloat())
-        val bottomLimit = min(BitmapBounds.bottom(mBoundsPoints), height.toFloat())
+        val leftLimit = max(BitmapUtils.getRectLeft(mBoundsPoints), 0f)
+        val topLimit = max(BitmapUtils.getRectTop(mBoundsPoints), 0f)
+        val rightLimit = min(BitmapUtils.getRectRight(mBoundsPoints), width.toFloat())
+        val bottomLimit = min(BitmapUtils.getRectBottom(mBoundsPoints), height.toFloat())
 
         Log.i("Deok","leftLimit = ${leftLimit} topLimit = ${topLimit} rightLimit = ${rightLimit} bottomLimit= ${bottomLimit}  ")
 
@@ -392,14 +391,22 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
 
     // 경계를 계산하는 것.
     private fun calculateBounds(): Boolean {
-        var left = BitmapBounds.left(mBoundsPoints)
-        var top = BitmapBounds.top(mBoundsPoints)
-        var right = BitmapBounds.right(mBoundsPoints)
-        var bottom = BitmapBounds.bottom(mBoundsPoints)
+        var left = BitmapUtils.getRectLeft(mBoundsPoints)
+        var top = BitmapUtils.getRectTop(mBoundsPoints)
+        var right = BitmapUtils.getRectRight(mBoundsPoints)
+        var bottom = BitmapUtils.getRectBottom(mBoundsPoints)
 
         // 직선적인 각도(0도, 90도, 180도, 270도) 로 회전되었거나 회전되지 않은 상태입니다.
         mCalcBounds[left, top, right] = bottom
         return false
+    }
+
+    fun resetCropOverlayView() {
+        if (initializedCropWindow) {
+            cropWindowRect = BitmapUtils.EMPTY_RECT_F
+            initCropWindow()
+            invalidate()
+        }
     }
 
 }
@@ -419,4 +426,11 @@ enum class CropShape {
 
 enum class CropCornerShape {
     RECTANGLE
+}
+
+enum class ScaleType {
+    FIT_CENTER,
+    CENTER,
+    CENTER_CROP,
+    CENTER_INSIDE
 }

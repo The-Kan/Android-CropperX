@@ -8,6 +8,9 @@ import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import com.devyd.cropperx.view.CropCornerShape
 import com.devyd.cropperx.view.CropShape
+import com.devyd.cropperx.view.CropperControlView
+import com.devyd.cropperx.view.CropperXView
+import com.devyd.cropperx.view.ScaleType
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -16,6 +19,8 @@ data class CropOptions (
     val fixAspectRatio: Boolean = false,
     val aspectRatioX: Int = 1,
     val aspectRatioY: Int = 1,
+    var scaleType: ScaleType = ScaleType.FIT_CENTER,
+    var autoZoomEnabled: Boolean = true,
 
     // Border line properties
     @Px val borderLineThickness: Float = dpToPx(3f),
