@@ -191,8 +191,6 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         } else {
             setMeasuredDimension(widthSize, heightSize)
         }
-
-
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -282,7 +280,10 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                 width.toFloat(),
                 height.toFloat(),
             )
+            Log.i("Deok", "크기제한 width = ${width}, height = ${height}")
+
         }
+
 
         cropperControlView!!.setBounds(mImagePoints, width, height)
     }

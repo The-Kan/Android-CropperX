@@ -50,7 +50,9 @@ data class CropOptions (
     val initialCropWindowPaddingRatio: Float = 0.0f,
 
     // Touch area radius around handles
-    @Px val touchRadius: Float = dpToPx(24f),
+    @Px val touchRadius: Float = dpToPx(50f),
+
+    @Px var snapRadius: Float = dpToPx(3f),
 
     // Corner indicator styling
     @Px val borderCornerOffset: Float = dpToPx(5f),

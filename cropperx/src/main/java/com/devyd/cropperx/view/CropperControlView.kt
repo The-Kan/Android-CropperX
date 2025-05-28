@@ -1,5 +1,6 @@
 package com.devyd.cropperx.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -7,9 +8,11 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import com.devyd.cropperx.crop.CropOptions
 import com.devyd.cropperx.crop.CropRectController
+import com.devyd.cropperx.crop.CropRectMoveController
 import com.devyd.cropperx.util.BitmapUtils
 import java.util.Arrays
 import kotlin.math.abs
@@ -101,6 +104,11 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
     private var mViewWidth = 0
     private var mViewHeight = 0
 
+    private var mMoveHandler: CropRectMoveController? = null
+
+    private var mCenterMoveEnabled = true
+
+    private var mSnapRadius = 0f
 
     internal companion object {
         // 단순히 지정한 색상만 설정된 Paint 객체를 반환
@@ -143,7 +151,9 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
             val w = borderPaint!!.strokeWidth
             val rect = cropRectController.getRect()
             // 안쪽으로 w/2만큼 땅김.
+            Log.i("Deok","그리기 전 1 rect top =  ${rect.top}")
             rect.inset(w/2, w/2)
+            Log.i("Deok","그리기 전 2 rect top =  ${rect.top}")
 
             when(cropShape){
                 CropShape.RECTANGLE ->{
@@ -185,6 +195,8 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
         aspectRatioX = options.aspectRatioX
         aspectRatioY = options.aspectRatioY
         mTouchRadius = options.touchRadius
+        mSnapRadius = options.snapRadius
+
         mInitialCropWindowPaddingRatio = options.initialCropWindowPaddingRatio
         borderPaint = getNewPaintOrNull(options.borderLineThickness, options.borderLineColor)
         mBorderCornerOffset = options.borderCornerOffset
@@ -409,14 +421,103 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
         }
     }
 
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        // 뷰가 입력을 받을 활성화상태인지 검사.
+        return if (isEnabled) {
+            // mScaleDetector를 사용하여 멀티터치 이벤트를 처리합니다. mScaleDetector는 스케일링 제스처(예: 핀치 줌) 등을 감지하는 객체로 추측
+
+            when (event.action) {
+                // ACTION_DOWN (터치 시작)
+                MotionEvent.ACTION_DOWN -> {
+                    Log.i("Deok", "ACTION_DOWN START")
+                    // 터치 시작 위치에서 필요한 처리를 함
+                    onActionDown(event.x, event.y)
+                    Log.i("Deok", "ACTION_DOWN END")
+                    true
+                }
+                // 터치가 이동하는 동안 발생하는 이벤트
+                MotionEvent.ACTION_MOVE -> {
+                    Log.i("Deok", "ACTION_MOVE START")
+                    // 터치 이동에 대한 처리
+                    onActionMove(event.x, event.y)
+                    // 부모 뷰가 이 터치 이벤트를 가로채지 않도록 설정
+                    // 드래그 중에 부모 뷰가 터치이벤트를 가로채지 않도록 하기 위한 설정.
+                    parent.requestDisallowInterceptTouchEvent(true)
+                    Log.i("Deok", "ACTION_MOVE END")
+                    true
+
+                }
+                // ACTION_UP 또는 ACTION_CANCEL (터치 종료)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    Log.i("Deok", "ACTION_UP 또는 ACTION_CANCEL START")
+                    // 부모 뷰가 터치 이벤트를 가로채지 않도록 설정
+                    parent.requestDisallowInterceptTouchEvent(false)
+                    onActionUp()
+                    Log.i("Deok", "ACTION_UP 또는 ACTION_CANCEL END")
+                    true
+                }
+                else -> false
+            }
+        } else {
+            false
+        }
+    }
+
+    private fun onActionDown(x: Float, y: Float) {
+        Log.i("Deok", "터치 지점 x = ${x} y = ${y}")
+
+        mMoveHandler =
+                // 크롭 창의 테두리나 코너, 혹은 안쪽 중앙에 있는지를 판단해서,
+                // 움직일 수 있는 핸들(MoveHandler) 객체를 반환
+            cropRectController.getMoveHandler(x, y, mTouchRadius, cropShape!!, mCenterMoveEnabled)
+
+        if (mMoveHandler != null) invalidate()
+    }
+
+    // 크롭 영역을 이동하거나 크기 조절하는 역할
+    private fun onActionMove(x: Float, y: Float) {
+        Log.i("Deok", "Move 지점 x = ${x} y = ${y}")
+        if (mMoveHandler != null) {
+            var snapRadius = mSnapRadius
+            val rect = cropRectController.getRect()
+
+            // 실제로 크롭 영역을 이동하거나 크기 조절하는 핵심 로직 호출
+            mMoveHandler!!.move(
+                rect, // 현재 크롭 위치
+                x, // 사용자의 손가락 위치
+                y, // 사용자의 손가락 위치
+                mCalcBounds, // 크롭 가능한 범위
+                mViewWidth, // 전체 이미지 뷰 크기
+                mViewHeight, // 전체 이미지 뷰 크기
+                snapRadius, //  가장자리 붙임 기능 반경
+                isFixAspectRatio, // 비율 고정 여부
+                mTargetAspectRatio, // 고정할 비율
+            )
+            // 이동/크기 변경된 후의 rect를 crop window에 반영
+            cropRectController.setRect(rect)
+            // 크롭 영역이 변경 중임을 외부에 알림 (true)
+            mCropWindowChangeListener?.onCropWindowChanged(true)
+            // 이동된 rect를 반영하기위하여 다시 그리기 호출
+            invalidate()
+        }
+    }
+
+    private fun onActionUp() {
+        // 사용자가 크롭 영역을 조작하고 있었는지를 확인
+        if (mMoveHandler != null) {
+            // 더 이상 조작 중이 아니므로, 조작 핸들을 제거
+            mMoveHandler = null
+            // 크롭 창 변경이 종료되었음을 외부에 알림
+            mCropWindowChangeListener?.onCropWindowChanged(false)
+            // 화면 다시 그리기 요청
+            invalidate()
+        }
+    }
 }
 
 internal fun interface CropWindowChangeListener {
-    /**
-     * Called after a change in crop window rectangle.
-     *
-     * [inProgress] if the crop window change operation is still in progress by user touch
-     */
     fun onCropWindowChanged(inProgress: Boolean)
 }
 
