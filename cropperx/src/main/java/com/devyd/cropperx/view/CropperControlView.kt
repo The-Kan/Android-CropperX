@@ -19,8 +19,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class CropperControlView (context : Context, attrs : AttributeSet?) : View(context, attrs) {
-
+internal class CropperControlView (context : Context, attrs : AttributeSet?) : View(context, attrs) {
 
     private var borderPaint : Paint? = null
     private var cropRectController = CropRectController()
@@ -221,9 +220,11 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
     fun setCropWindowLimits(
         maxWidth: Float,
         maxHeight: Float,
+        scaleFactorWidth: Float,
+        scaleFactorHeight: Float,
     ) {
         cropRectController
-            .setCropWindowLimits(maxWidth, maxHeight)
+            .setCropWindowLimits(maxWidth, maxHeight, scaleFactorWidth, scaleFactorHeight)
     }
 
     fun setBounds(boundsPoints: FloatArray?, viewWidth: Int, viewHeight: Int) {
@@ -483,6 +484,9 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
             var snapRadius = mSnapRadius
             val rect = cropRectController.getRect()
 
+            calculateBounds()
+
+
             // 실제로 크롭 영역을 이동하거나 크기 조절하는 핵심 로직 호출
             mMoveHandler!!.move(
                 rect, // 현재 크롭 위치
@@ -514,6 +518,10 @@ class CropperControlView (context : Context, attrs : AttributeSet?) : View(conte
             // 화면 다시 그리기 요청
             invalidate()
         }
+    }
+
+    fun setCropWindowChangeListener(listener: CropWindowChangeListener?) {
+        mCropWindowChangeListener = listener
     }
 }
 

@@ -84,9 +84,13 @@ internal class CropRectController {
     fun setCropWindowLimits(
         maxWidth: Float,
         maxHeight: Float,
+        scaleFactorWidth: Float,
+        scaleFactorHeight: Float,
     ) {
         mMaxCropWindowWidth = maxWidth
         mMaxCropWindowHeight = maxHeight
+        mScaleFactorWidth = scaleFactorWidth
+        mScaleFactorHeight = scaleFactorHeight
     }
 
     fun getMoveHandler(

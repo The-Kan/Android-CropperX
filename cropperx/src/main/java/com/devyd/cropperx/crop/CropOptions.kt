@@ -14,13 +14,14 @@ import com.devyd.cropperx.view.ScaleType
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class CropOptions (
+data class CropOptions(
     // Aspect ratio settings
     val fixAspectRatio: Boolean = false,
     val aspectRatioX: Int = 1,
     val aspectRatioY: Int = 1,
     var scaleType: ScaleType = ScaleType.FIT_CENTER,
     var autoZoomEnabled: Boolean = true,
+    var maxZoom: Int = 4,
 
     // Border line properties
     @Px val borderLineThickness: Float = dpToPx(3f),
