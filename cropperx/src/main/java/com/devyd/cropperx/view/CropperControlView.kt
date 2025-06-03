@@ -410,6 +410,7 @@ internal class CropperControlView (context : Context, attrs : AttributeSet?) : V
         var bottom = BitmapUtils.getRectBottom(mBoundsPoints)
 
         // 직선적인 각도(0도, 90도, 180도, 270도) 로 회전되었거나 회전되지 않은 상태입니다.
+        Log.i("Deok", "snapEdgesToBounds calculateBounds mCalcBounds.right = ${mCalcBounds.right}")
         mCalcBounds[left, top, right] = bottom
         return false
     }
@@ -483,7 +484,7 @@ internal class CropperControlView (context : Context, attrs : AttributeSet?) : V
         if (mMoveHandler != null) {
             var snapRadius = mSnapRadius
             val rect = cropRectController.getRect()
-
+            Log.i("Deok", "snapEdgesToBounds onActionMove")
             calculateBounds()
 
 

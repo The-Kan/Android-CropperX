@@ -46,7 +46,8 @@ fun CropperXBottomToolBar(
     modifier: Modifier = Modifier,
     toolbarHeight: Dp = SizeUtil.TOOLBAR_HEIGHT_X_LARGE,
     selectedOptionIdx: Int,
-    onCropOptionClicked: (Int, CropOption) -> Unit
+    onCropOptionClicked: (Int, CropOption) -> Unit,
+    onCropVerticalHorizontalClicked : () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -59,7 +60,7 @@ fun CropperXBottomToolBar(
 
 
         val option = CropUtil.getCropVerticalRatioList()[selectedOptionIdx]
-        var verticalHorizontalClickable by remember { mutableStateOf(option.aspectRatioX >= 1) }
+        var verticalHorizontalClickable by remember { mutableStateOf(option.aspectRatioX != option.aspectRatioY) }
 
 
         Row(
@@ -92,10 +93,12 @@ fun CropperXBottomToolBar(
                 verticalShapeModifier = verticalShapeModifier.clickable {
                     isVertical = true
                     cropOptionList = CropUtil.getCropVerticalRatioList()
+                    onCropVerticalHorizontalClicked()
                 }
                 horizontalShapeModifier = horizontalShapeModifier.clickable {
                     isVertical = false
                     cropOptionList = CropUtil.getCropHorizontalRatioList()
+                    onCropVerticalHorizontalClicked()
                 }
             }
 
@@ -153,7 +156,7 @@ fun CropperXBottomToolBar(
                     selectedBorderColor = MaterialTheme.colorScheme.onBackground,
                     onClicked = {
                         onCropOptionClicked(idx, it)
-                        if (it.aspectRatioX >= 1) {
+                        if (it.aspectRatioX != it.aspectRatioY) {
                             verticalHorizontalClickable = true
                         } else {
                             verticalHorizontalClickable = false
@@ -220,6 +223,7 @@ fun show() {
         modifier = Modifier,
         toolbarHeight = SizeUtil.TOOLBAR_HEIGHT_X_LARGE,
         selectedOptionIdx = 0,
-        onCropOptionClicked = { a, b -> }
+        onCropOptionClicked = { a, b -> },
+        onCropVerticalHorizontalClicked = {}
     )
 }

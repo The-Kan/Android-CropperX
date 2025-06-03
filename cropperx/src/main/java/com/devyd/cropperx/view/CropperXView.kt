@@ -135,6 +135,12 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     }
 
+
+    fun setImageCropOptions(options: CropOptions) {
+        cropperControlView?.setOption(options)
+    }
+
+
     private fun clearImage() {
         if (originalBitmap != null && imageResource > 0 || imageUri != null) {
             originalBitmap!!.recycle()
@@ -228,11 +234,19 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
     }
 
     private fun applyImageMatrix(width: Float, height: Float, center: Boolean, animate: Boolean) {
+        Log.i("Deok1", "!!!! applyImageMatrix Start!!!!")
         val bitmap = originalBitmap
         if (bitmap != null && width > 0 && height > 0) {
             mImageMatrix.invert(mImageInverseMatrix)
 
             val cropRect = cropperControlView!!.cropWindowRect
+            Log.i("Deok1", "cropRect before")
+            Log.i("Deok1", "cropRect.top = ${cropRect.top}")
+            Log.i("Deok1", "cropRect.bottom = ${cropRect.bottom}")
+            Log.i("Deok1", "cropRect.left = ${cropRect.left}")
+            Log.i("Deok1", "cropRect.right = ${cropRect.right}")
+
+
 
             mImageInverseMatrix.mapRect(cropRect)
 
@@ -243,6 +257,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                 (width - bitmap.width) / 2,
                 (height - bitmap.height) / 2,
             )
+            // 중앙으로 오게함.
+            Log.i("Deok1", "postTranslate")
             mapImagePointsByImageMatrix()
 
             val scale = min(
@@ -259,8 +275,11 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                     BitmapUtils.getRectCenterX(mImagePoints),
                     BitmapUtils.getRectCenterY(mImagePoints),
                 )
+                // 중앙에서 확대시킴.
+                Log.i("Deok1", "postScale 1")
                 mapImagePointsByImageMatrix()
             }
+            mImagePointsLog("snapEdgesToBounds 1'''")
 
             val scaleX = mZoom
             val scaleY = mZoom
@@ -271,9 +290,19 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                 BitmapUtils.getRectCenterX(mImagePoints),
                 BitmapUtils.getRectCenterY(mImagePoints),
             )
+            // crop 상황에따라 mZoom 확대시킴
+            Log.i("Deok1", "postScale 2 mZoom = ${mZoom}")
             mapImagePointsByImageMatrix()
+
             // cropRect도 다시 **화면 좌표계** 기준으로 변환해줘야 합니다.
             mImageMatrix.mapRect(cropRect)
+
+            Log.i("Deok1", "cropRect mid")
+            Log.i("Deok1", "cropRect.top = ${cropRect.top}")
+            Log.i("Deok1", "cropRect.bottom = ${cropRect.bottom}")
+            Log.i("Deok1", "cropRect.left = ${cropRect.left}")
+            Log.i("Deok1", "cropRect.right = ${cropRect.right}")
+
 
 
             // 중심점이 크롭 Rect의 중심을 기준으로 계산됨.
@@ -282,6 +311,10 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                     if (width > BitmapUtils.getRectWidth(mImagePoints)) {
                         0f
                     } else {
+                        // width / 2 - cropRect.centerX() -> crop 중앙을 뷰의 중앙에 맞추기 위하여 이동해야하는 량
+                        // -BitmapUtils.getRectLeft(mImagePoints) -> 이미지 왼쪽 모서리가 뷰의 왼쪽(0)보다 더 왼쪽으로 나가지 않도록 하는 최대 오른쪽 이동량
+                        // getWidth() - BitmapUtils.getRectRight(mImagePoints) -> 이미지 오른쪽 모서리가 뷰의 오른쪽(width)보다 더 오른쪽으로 나가지 않도록 하는 최소 왼쪽 이동량
+
                         max(
                             min(
                                 width / 2 - cropRect.centerX(),
@@ -303,24 +336,78 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                             getHeight() - BitmapUtils.getRectBottom(mImagePoints),
                         ) / scaleY
                     }
+            } else {
+                // 사용자가 이미지를 확대하거나 이동했을 때,
+                //크롭 창이 이미지 바깥으로 밀려날 수 있음.
+                //그래서 현재 mZoomOffsetX / mZoomOffsetY 값을 조정해서, 크롭 창이 항상 화면 내부에 있도록 함.
+                Log.i("Deok1", "tt  before")
+                Log.i("Deok1", "tt  mZoomOffsetX * scaleX= ${mZoomOffsetX * scaleX}")
+                Log.i("Deok1", "tt -cropRect.left = ${-cropRect.left}")
+                Log.i("Deok1", "tt -cropRect.right + width = ${-cropRect.right + width}")
+                Log.i("Deok1", "tt -cropRect.right = ${-cropRect.right}")
+                Log.i("Deok1", "tt width = ${ width}")
+
+
+                // mZoomOffsetX * scaleX -> crop 중앙을 뷰의 중앙에 맞추기 위하여 이동해야하는 량
+                // -cropRect.left -> crop 왼쪽이 왼쪽 바깥으로 벗어나지 않도록 최대선을 정함.
+                // -cropRect.right + width -> crop 오른쪽이 오른쪽 바깥으로 벗어나지 않도록 최소선을 정함.
+                mZoomOffsetX = (
+                        min(
+                            max(mZoomOffsetX * scaleX, -cropRect.left),
+                            -cropRect.right + width,
+                        ) / scaleX
+                        )
+
+                Log.i("Deok1", "tt  after")
+                Log.i("Deok1", "tt  mZoomOffsetX * scaleX= ${mZoomOffsetX * scaleX}")
+                Log.i("Deok1", "tt -cropRect.left = ${-cropRect.left}")
+                Log.i("Deok1", "tt -cropRect.right + width = ${-cropRect.right + width}")
+
+                mZoomOffsetY = (
+                        min(
+                            max(mZoomOffsetY * scaleY, -cropRect.top),
+                            -cropRect.bottom + height,
+                        ) / scaleY
+                        )
             }
 
             mImageMatrix.postTranslate(mZoomOffsetX * scaleX, mZoomOffsetY * scaleY)
             cropRect.offset(mZoomOffsetX * scaleX, mZoomOffsetY * scaleY)
             cropperControlView.cropWindowRect = cropRect
+            mImagePointsLog("snapEdgesToBounds 1''")
             mapImagePointsByImageMatrix()
             cropperControlView.invalidate()
 
+
             if(animate){
+                mImagePointsLog("snapEdgesToBounds 1'")
                 mAnimation!!.setEndState(mImagePoints, mImageMatrix)
                 cropperImageView.startAnimation(mAnimation)
+                mImagePointsLog("snapEdgesToBounds 2'")
             } else {
+                mImagePointsLog("snapEdgesToBounds 1")
                 cropperImageView.imageMatrix = mImageMatrix
+                mImagePointsLog("snapEdgesToBounds 2")
             }
 
             updateImageBounds(false)
+
+            Log.i("Deok1", "cropRect after")
+            Log.i("Deok1", "cropRect.top = ${cropRect.top}")
+            Log.i("Deok1", "cropRect.bottom = ${cropRect.bottom}")
+            Log.i("Deok1", "cropRect.left = ${cropRect.left}")
+            Log.i("Deok1", "cropRect.right = ${cropRect.right}")
         }
     }
+
+    private fun mImagePointsLog(tag: String){
+        Log.i("Deok1", "${tag} mImagePointsLog")
+        Log.i("Deok1", "${tag} mImagePointsLog 좌상단 = ${mImagePoints[0]} , ${mImagePoints[1]}")
+        Log.i("Deok1", "${tag} mImagePointsLog 우상단 = ${mImagePoints[2]} , ${mImagePoints[3]}")
+        Log.i("Deok1", "${tag} mImagePointsLog 좌하단 = ${mImagePoints[6]} , ${mImagePoints[7]}")
+        Log.i("Deok1", "${tag} mImagePointsLog 우하단 = ${mImagePoints[4]} , ${mImagePoints[5]}")
+    }
+
 
     private fun mapImagePointsByImageMatrix() {
         // 좌상단 (0, 0)
@@ -340,6 +427,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         // mapPoints()는 해당 매트릭스를 mImagePoints에 적용해서, 변환된 좌표를 직접 mImagePoints 배열에 덮어씌웁니다.
         // x,y 모두 150씩 이동시킨 네 꼭지점을 mImagePoints에 저장하라와 같은 동작.
         mImageMatrix.mapPoints(mImagePoints)
+        mImagePointsLog("mImagePointsLog")
+
 
         mScaleImagePoints[0] = 0f
         mScaleImagePoints[1] = 0f
@@ -354,9 +443,11 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     private fun updateImageBounds(clear: Boolean) {
         // 크롭 오버레이의 사각형 위치 갱신
-
+        Log.i("Deok", "snapEdgesToBounds updateImageBounds clear = ${clear}")
         if(originalBitmap != null && !clear){
 
+            // 확대 적용이 된 너비 * scaleFactorWidth -> 원본 너비   ex) 1519.2463 * 0.39493266 = 599.9999 (원본 사진 너비)
+            // 현재 작은 사진 기준으로 loadedSampleSize가 1인데, 큰 원본 사진이 들어오는 경우, loadedSampleSize가 변할 수 있으므로 수정해야함!!!
             val scaleFactorWidth =
                 100f * loadedSampleSize / BitmapUtils.getRectWidth(mScaleImagePoints)
             val scaleFactorHeight =
@@ -370,11 +461,13 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                 scaleFactorWidth,
                 scaleFactorHeight
             )
+            Log.i("Deok", "snapEdgesToBounds scaleFactorWidth ${scaleFactorWidth} , width.toFloat() = ${width.toFloat()}")
+            Log.i("Deok", "snapEdgesToBounds loadedSampleSize ${loadedSampleSize} , BitmapUtils.getRectWidth(mScaleImagePoints) = ${BitmapUtils.getRectWidth(mScaleImagePoints)}")
             Log.i("Deok", "크기제한 width = ${width}, height = ${height}")
 
         }
 
-
+        mImagePointsLog("snapEdgesToBounds")
         cropperControlView!!.setBounds(if (clear) null else mImagePoints, width, height)
     }
 
@@ -385,7 +478,6 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         if (originalBitmap != null && width > 0 && height > 0) {
             val cropRect = cropperControlView!!.cropWindowRect // 현재 크롭 윈도우(사용자가 지정한 잘라낼 영역)의 사각형(RectF)을 가져옵니다
             if (inProgress) { // 사용자가 크롭 조작을 하는 중일 경우
-                Log.i("Deok", "inProgress true 이거 필요하니?")
                 //크롭 영역이 화면 바깥으로 나간 경우
                 if (cropRect.left < 0 || cropRect.top < 0 || cropRect.right > width || cropRect.bottom > height) {
                     applyImageMatrix( // 이미지 행렬을 다시 계산해서 위치를 재조정
@@ -440,7 +532,7 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
     }
 
 
-    override fun onCropWindowChanged(inProgress: Boolean) { // inProgress 없어도 되지 않나?
+    override fun onCropWindowChanged(inProgress: Boolean) {
         handleCropWindowChanged(inProgress, true)
     }
 }

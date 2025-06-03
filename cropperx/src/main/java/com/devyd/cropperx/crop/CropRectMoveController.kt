@@ -174,6 +174,8 @@ internal class CropRectMoveController(
     }
 
     private fun snapEdgesToBounds(edges: RectF, bounds: RectF, margin: Float) {
+        Log.i("Deok", "snapEdgesToBounds")
+        Log.i("Deok", "snapEdgesToBounds edges.right = ${edges.right}, bounds.right = ${bounds.right}, margin = ${margin}")
         if (edges.left < bounds.left + margin) {
             edges.offset(bounds.left - edges.left, 0f)
         }
@@ -183,6 +185,7 @@ internal class CropRectMoveController(
         }
 
         if (edges.right > bounds.right - margin) {
+            Log.i("Deok", "snapEdgesToBounds edges.right = ${edges.right}, bounds.right = ${bounds.right}, margin = ${margin}")
             edges.offset(bounds.right - edges.right, 0f)
         }
 

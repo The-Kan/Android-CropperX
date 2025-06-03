@@ -8,7 +8,7 @@ data class CropOption(
     val aspectRatioY: Float,
     val label: String = when (aspectRatioX) {
         -1f -> "free"
-        -2f -> "square"
+        1f -> "square"
         else -> "${aspectRatioX.toInt()}:${aspectRatioY.toInt()}"
     }
 ) {

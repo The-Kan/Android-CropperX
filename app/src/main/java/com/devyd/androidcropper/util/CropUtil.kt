@@ -12,8 +12,8 @@ object CropUtil {
                 aspectRatioY = -1f,
             ),
             CropOption(
-                aspectRatioX = -2f,
-                aspectRatioY = -2f,
+                aspectRatioX = 1f,
+                aspectRatioY = 1f,
             ),
             CropOption(
                 aspectRatioX = 9f,
@@ -52,8 +52,8 @@ object CropUtil {
                 aspectRatioY = -1f,
             ),
             CropOption(
-                aspectRatioX = -2f,
-                aspectRatioY = -2f,
+                aspectRatioX = 1f,
+                aspectRatioY = 1f,
             ),
             CropOption(
                 aspectRatioX = 16f,

@@ -32,6 +32,7 @@ import com.devyd.androidcropper.util.AniUtil
 import com.devyd.androidcropper.util.ImmutableBitmap
 import com.devyd.androidcropper.util.SizeUtil
 import com.devyd.androidcropper.util.getActivity
+import com.devyd.cropperx.crop.CropOptions
 import com.devyd.cropperx.view.CropperXView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -75,6 +76,9 @@ fun CropperX(
 
     var neededCrop by remember { mutableStateOf(false) }
     var selectedOptionIdx by remember { mutableStateOf(0) }
+    var cropOptions by remember {
+        mutableStateOf(CropOptions())
+    }
 
 
     val onCloseClicked = remember<() -> Unit> {
@@ -116,16 +120,31 @@ fun CropperX(
             when (cropOption.aspectRatioX) {
                 -1f -> {
                     // free
-                }
-
-                -2f -> {
-                    // square
+                    cropOptions = cropOptions.copy(
+                        fixAspectRatio = false,
+                        aspectRatioX = 1,
+                        aspectRatioY = 1
+                    )
                 }
 
                 else -> {
                     // fixRatio
+                    cropOptions = cropOptions.copy(
+                        fixAspectRatio = true,
+                        aspectRatioX = cropOption.aspectRatioX.toInt(),
+                        aspectRatioY = cropOption.aspectRatioY.toInt()
+                    )
                 }
             }
+        }
+    }
+
+    val onCropVerticalHorizontalClicked = remember<() -> Unit> {
+        {
+            cropOptions = cropOptions.copy(
+                aspectRatioX = cropOptions.aspectRatioY,
+                aspectRatioY = cropOptions.aspectRatioX
+            )
         }
     }
 
@@ -144,7 +163,7 @@ fun CropperX(
                 modifier = Modifier,
                 toolbarHeight = topToolbarHeight,
                 onCloseClicked = onCloseClicked,
-                onDoneClicked =  onCropperXDoneClicked
+                onDoneClicked = onCropperXDoneClicked
             )
         }
 
@@ -157,7 +176,7 @@ fun CropperX(
                 .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
         ) {
             AndroidView(
-                modifier =  Modifier,
+                modifier = Modifier,
                 factory = { context ->
                     CropperXView(context = context).apply {
                         layoutParams = ViewGroup.LayoutParams(
@@ -165,17 +184,17 @@ fun CropperX(
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
                         setImageBitmap(immutableBitmap.bitmap)
-//                        setImageCropOptions(cropImageOptions)
+                        setImageCropOptions(cropOptions)
 //                        setOnCropImageCompleteListener(cropCompleteListener)
 
                     }
                 },
-                update = {
-                    cropperXView ->
+                update = { cropperXView ->
 
-                    if(neededCrop){
+                    if (neededCrop) {
                         // 크롭 비동기 시작
                     }
+                    cropperXView.setImageCropOptions(cropOptions)
                 }
             )
 
@@ -190,7 +209,8 @@ fun CropperX(
                 modifier = Modifier,
                 toolbarHeight = bottomToolbarHeight,
                 selectedOptionIdx = selectedOptionIdx,
-                onCropOptionClicked = onCropOptionClicked
+                onCropOptionClicked = onCropOptionClicked,
+                onCropVerticalHorizontalClicked = onCropVerticalHorizontalClicked
             )
 
         }
