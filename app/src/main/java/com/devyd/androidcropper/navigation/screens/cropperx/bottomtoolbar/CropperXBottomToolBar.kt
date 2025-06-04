@@ -47,7 +47,7 @@ fun CropperXBottomToolBar(
     toolbarHeight: Dp = SizeUtil.TOOLBAR_HEIGHT_X_LARGE,
     selectedOptionIdx: Int,
     onCropOptionClicked: (Int, CropOption) -> Unit,
-    onCropVerticalHorizontalClicked : () -> Unit
+    onCropVerticalHorizontalClicked : (isVertical: Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -60,8 +60,9 @@ fun CropperXBottomToolBar(
 
 
         val option = CropUtil.getCropVerticalRatioList()[selectedOptionIdx]
-        var verticalHorizontalClickable by remember { mutableStateOf(option.aspectRatioX != option.aspectRatioY) }
 
+
+        var verticalHorizontalClickable by remember { mutableStateOf(option.aspectRatioX != option.aspectRatioY) }
 
         Row(
             modifier = Modifier
@@ -90,16 +91,21 @@ fun CropperXBottomToolBar(
                 .background(MaterialTheme.colorScheme.background)
 
             if (verticalHorizontalClickable) {
-                verticalShapeModifier = verticalShapeModifier.clickable {
-                    isVertical = true
-                    cropOptionList = CropUtil.getCropVerticalRatioList()
-                    onCropVerticalHorizontalClicked()
+                if(isVertical){
+                    horizontalShapeModifier = horizontalShapeModifier.clickable {
+                        isVertical = false
+                        cropOptionList = CropUtil.getCropHorizontalRatioList()
+                        onCropVerticalHorizontalClicked(isVertical)
+                    }
+                } else {
+                    verticalShapeModifier = verticalShapeModifier.clickable {
+                        isVertical = true
+                        cropOptionList = CropUtil.getCropVerticalRatioList()
+                        onCropVerticalHorizontalClicked(isVertical)
+                    }
                 }
-                horizontalShapeModifier = horizontalShapeModifier.clickable {
-                    isVertical = false
-                    cropOptionList = CropUtil.getCropHorizontalRatioList()
-                    onCropVerticalHorizontalClicked()
-                }
+
+
             }
 
             Box(

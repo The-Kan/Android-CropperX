@@ -37,6 +37,8 @@ import com.devyd.cropperx.view.CropperXView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun CropperX(
@@ -139,12 +141,14 @@ fun CropperX(
         }
     }
 
-    val onCropVerticalHorizontalClicked = remember<() -> Unit> {
-        {
-            cropOptions = cropOptions.copy(
-                aspectRatioX = cropOptions.aspectRatioY,
-                aspectRatioY = cropOptions.aspectRatioX
+    val onCropVerticalHorizontalClicked = remember<(Boolean) -> Unit> {
+        { isVertical ->
+            val tmpCropOptions = cropOptions.copy(
+                aspectRatioX = if(isVertical) min(cropOptions.aspectRatioX, cropOptions.aspectRatioY) else max(cropOptions.aspectRatioX, cropOptions.aspectRatioY),
+                aspectRatioY = if(isVertical) max(cropOptions.aspectRatioX, cropOptions.aspectRatioY) else min(cropOptions.aspectRatioX, cropOptions.aspectRatioY)
             )
+
+            if(tmpCropOptions != cropOptions) cropOptions = tmpCropOptions
         }
     }
 
