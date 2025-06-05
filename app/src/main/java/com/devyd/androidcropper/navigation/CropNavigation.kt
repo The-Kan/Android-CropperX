@@ -26,7 +26,12 @@ fun CropNavigation() {
     val navigateSelectImage = remember<() -> Unit> {
         {
             naviViewModel.reset()
-            navController.navigate(NavList.SELECT_IMAGE)
+            navController.navigate(
+                NavList.SELECT_IMAGE,
+                navOptions = NavOptions.Builder()
+                    .setPopUpTo(route = NavList.SELECT_IMAGE, inclusive = true)
+                    .build()
+            )
         }
     }
 
@@ -87,7 +92,7 @@ fun CropNavigation() {
             ShowImage(
                 initialState = ShowImageState(naviViewModel.undoStack, naviViewModel.redoStack),
                 navigateCropperX = navigateCropperX,
-                navigateBackPress = navigateBackPress,
+                navigateSelectImage = navigateSelectImage,
             )
         }
 
