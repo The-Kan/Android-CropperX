@@ -87,7 +87,7 @@ fun CropNavigation() {
             ShowImage(
                 initialState = ShowImageState(naviViewModel.undoStack, naviViewModel.redoStack),
                 navigateCropperX = navigateCropperX,
-                navigateSelectImage = navigateSelectImage,
+                navigateBackPress = navigateBackPress,
             )
         }
 

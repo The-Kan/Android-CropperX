@@ -53,7 +53,7 @@ fun ShowImage(
     modifier: Modifier = Modifier,
     initialState: ShowImageState,
     navigateCropperX: (ShowImageState) -> Unit,
-    navigateSelectImage: () -> Unit,
+    navigateBackPress: () -> Unit,
 ) {
 
     val viewModel: ShowImageViewModel = hiltViewModel()
@@ -86,7 +86,7 @@ fun ShowImage(
             modifier = modifier,
             bitmap = bitmap,
             bottomToolbarEvent = bottomToolbarEvent,
-            navigateSelectImage = navigateSelectImage,
+            navigateBackPress = navigateBackPress,
             isUndoPossible = viewModel.isUndoPossible(),
             isRedoPossible = viewModel.isRedoPossible(),
             undo = viewModel::undo,
@@ -102,7 +102,7 @@ fun ShowImageLayout(
     modifier: Modifier,
     bitmap: Bitmap,
     bottomToolbarEvent: (BottomToolbarEvent) -> Unit,
-    navigateSelectImage: () -> Unit,
+    navigateBackPress: () -> Unit,
     isUndoPossible: Boolean,
     isRedoPossible: Boolean,
     undo: () -> Unit,
@@ -113,12 +113,12 @@ fun ShowImageLayout(
 
     val onCloseClicked = remember<() -> Unit> {
         {
-            navigateSelectImage()
+            navigateBackPress()
         }
     }
 
     BackHandler {
-        navigateSelectImage()
+        navigateBackPress()
     }
 
     val topToolbarHeight = SizeUtil.TOOLBAR_HEIGHT_SMALL
