@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.devyd.androidcropper.bitmap.BitmapStatus
 import com.devyd.androidcropper.util.BitmapUtil
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +25,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SelectImage(
     modifier: Modifier = Modifier,
-    onImageLoaded : (Bitmap) -> Unit
+    onImageLoaded: (Bitmap) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -46,11 +45,9 @@ fun SelectImage(
         imageUri?.let {
             BitmapUtil.getResizedBitmap(context, it)
                 .flowOn(Dispatchers.IO) // 업 스트림 IO에서 진행.
-                .onEach { bitmapStatus -> resizedBitmapStatus = bitmapStatus }
-                .launchIn(lifecycleOwner.lifecycleScope)
-
-
-
+                .collect { bitmapStatus ->
+                    resizedBitmapStatus = bitmapStatus
+                }
         }
     }
 
