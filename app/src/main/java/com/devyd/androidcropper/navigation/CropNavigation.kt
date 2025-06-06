@@ -1,6 +1,7 @@
 package com.devyd.androidcropper.navigation
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
@@ -72,6 +73,19 @@ fun CropNavigation() {
         }
     }
 
+    val onSaveInSampleSize = remember<(Int) -> Unit> {
+        {
+           naviViewModel.setInSampleSize(it)
+        }
+    }
+
+    val onSaveOriginalImageUri = remember<(Uri) -> Unit> {
+        {
+            naviViewModel.setOriginalImageUri(it)
+        }
+    }
+
+
     NavHost(
         navController = navController,
         startDestination = NavList.SELECT_IMAGE,
@@ -83,7 +97,11 @@ fun CropNavigation() {
             route = NavList.SELECT_IMAGE
             // 애니 설정 필요
         ) {
-            SelectImage(onImageLoaded = onImageLoaded)
+            SelectImage(
+                onImageLoaded = onImageLoaded,
+                onSaveInSampleSize = onSaveInSampleSize,
+                onSaveOriginalImageUri = onSaveOriginalImageUri,
+            )
         }
 
         composable(
@@ -102,7 +120,9 @@ fun CropNavigation() {
             CropperX(
                 immutableBitmap = ImmutableBitmap(naviViewModel.getCurrentBitmap()),
                 onDoneClicked = onDoneClicked,
-                navigateBackPress = navigateBackPress
+                navigateBackPress = navigateBackPress,
+                inSampleSize = naviViewModel.inSampleSize,
+                originalImageUri = naviViewModel.originalImageUri
             )
         }
 

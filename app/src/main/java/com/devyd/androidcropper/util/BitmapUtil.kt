@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import com.devyd.androidcropper.bitmap.BitmapStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -39,8 +40,12 @@ object BitmapUtil {
 
     }
 
-    private fun resizeBitmapFromRes(context: Context, uri: Uri): Bitmap? {
-        return BitmapFactory.Options().run {
+    private fun resizeBitmapFromRes(
+        context: Context,
+        uri: Uri,
+        onSaveInSampleSize: ((Int) -> Unit)? = null
+    ): Bitmap? {
+        BitmapFactory.Options().run {
             // 아래 중복인것같은데 getWidthAndHeightFromUri랑
 //            inJustDecodeBounds = true
 //            context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -54,30 +59,41 @@ object BitmapUtil {
             inJustDecodeBounds = false
 
             inSampleSize = calculateInSampleSize(screenSize, bitmapSize)
+            if (onSaveInSampleSize != null) {
+                onSaveInSampleSize(inSampleSize)
+            }
+
+            Log.i("Deok", "inSampleSize = ${inSampleSize}")
 
             val bitmap: Bitmap? = context.contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it, null, this)
             }
+
             return bitmap
         }
     }
 
     fun getResizedBitmap(
         context: Context,
-        uri: Uri
+        uri: Uri,
+        onSaveInSampleSize: ((Int) -> Unit)? = null
     ) = flow {
         emit(BitmapStatus.Decoding)
         delay(500) // just Test progress, It will be removed
-        val decodedBitmap = resizeBitmapFromRes(context, uri)
+        val decodedBitmap = resizeBitmapFromRes(context, uri, onSaveInSampleSize)
         if (decodedBitmap != null) {
             emit(BitmapStatus.Success(decodedBitmap))
         } else {
+            if (onSaveInSampleSize != null) {
+                onSaveInSampleSize(0)
+            }
             emit(BitmapStatus.Fail())
         }
     }
 
     fun saveBitmapToFile(bitmap: Bitmap, file: File) {
         FileOutputStream(file).use {
+            // 이 포맷이 CrroperXView에 전달되면 좋겠다.
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
         }
     }

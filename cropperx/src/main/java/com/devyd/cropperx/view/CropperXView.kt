@@ -2,18 +2,24 @@ package com.devyd.cropperx.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Bitmap.CompressFormat
 import android.graphics.Matrix
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
+import android.util.Pair
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.core.util.component1
+import androidx.core.util.component2
 import com.devyd.cropperx.R
 import com.devyd.cropperx.ani.CropperXAnimation
+import com.devyd.cropperx.crop.BitmapCroppingWorkerJob
 import com.devyd.cropperx.crop.CropOptions
 import com.devyd.cropperx.util.BitmapUtils
+import java.lang.ref.WeakReference
 import kotlin.math.max
 import kotlin.math.min
 
@@ -53,6 +59,35 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     private var mZoomOffsetX = 0f
     private var mZoomOffsetY = 0f
+
+    private var mOnCropCompleteListener: OnCropCompleteListener? = null
+
+    private var bitmapCroppingWorkerJob: WeakReference<BitmapCroppingWorkerJob>? = null
+
+    val cropPoints: FloatArray
+        get() {
+            // Get crop window position relative to the displayed image.
+            val cropWindowRect = cropperControlView!!.cropWindowRect
+            val points = floatArrayOf(
+                cropWindowRect.left,
+                cropWindowRect.top,
+                cropWindowRect.right,
+                cropWindowRect.top,
+                cropWindowRect.right,
+                cropWindowRect.bottom,
+                cropWindowRect.left,
+                cropWindowRect.bottom,
+            )
+            mImageMatrix.invert(mImageInverseMatrix)
+            mImageInverseMatrix.mapPoints(points)
+            val resultPoints = FloatArray(points.size)
+            for (i in points.indices) {
+                resultPoints[i] = points[i] * loadedSampleSize
+                Log.i("Deok", "계산되니? ${points[i]} , ${loadedSampleSize} -> ${ resultPoints[i]}")
+            }
+            return resultPoints
+        }
+
 
     internal companion object {
         /**
@@ -105,10 +140,14 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         progressBar.visibility = INVISIBLE
     }
 
-
     fun setImageBitmap(bitmap: Bitmap?) {
         // 초기화 단계이므로 크롭뷰도 초기화되어야함.
-        setBitmap(bitmap, 0, null, 1)
+        setBitmap(bitmap, 0, imageUri, 1)
+    }
+
+    fun setImageBitmap(bitmap: Bitmap?, imageUri: Uri?, loadSampleSize: Int) {
+        // 초기화 단계이므로 크롭뷰도 초기화되어야함.
+        setBitmap(bitmap, 0, imageUri, loadSampleSize)
     }
 
     private fun setBitmap(
@@ -471,6 +510,73 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
         cropperControlView!!.setBounds(if (clear) null else mImagePoints, width, height)
     }
 
+
+    fun startCropImage(
+        reqWidth: Int = 0,
+        reqHeight: Int = 0,
+        options: RequestSizeOptions = RequestSizeOptions.RESIZE_INSIDE,
+    ) {
+        requireNotNull(mOnCropCompleteListener) { "mOnCropCompleteListener is not set" }
+        startCropWorkerTask(
+            reqWidth = reqWidth,
+            reqHeight = reqHeight,
+            options = options,
+        )
+    }
+
+    fun setInSampleSize(inSampleSize :Int){
+        loadedSampleSize = inSampleSize
+    }
+
+    private fun startCropWorkerTask(
+        reqWidth: Int,
+        reqHeight: Int,
+        options: RequestSizeOptions,
+    ) {
+        val bitmap = originalBitmap
+        if (bitmap != null) {
+            val currentTask =
+                if (bitmapCroppingWorkerJob != null) bitmapCroppingWorkerJob!!.get() else null
+            currentTask?.cancel()
+
+            Log.i("Deok", "originalBitmap ${originalBitmap?.height} ${originalBitmap?.width}")
+            Log.i("Deok", "loadedSampleSize = ${loadedSampleSize}")
+
+            val (orgWidth, orgHeight) =
+                if (loadedSampleSize > 1 || options == RequestSizeOptions.SAMPLING) {
+                    Pair((bitmap.width * loadedSampleSize), (bitmap.height * loadedSampleSize))
+                } else {
+                    Pair(0, 0)
+                }
+
+
+            // 작업(launch { … })이 끝나면 내부 코루틴이 더 이상 이 객체를 강하게 잡고 있지 않으므로 메모리 회수될 수 있도록 함.
+            bitmapCroppingWorkerJob = WeakReference(
+                BitmapCroppingWorkerJob(
+                    context = context,
+                    cropperXViewReference = WeakReference(this),
+                    uri = imageUri,
+                    bitmap = bitmap,
+                    cropPoints = cropPoints,
+                    orgWidth = orgWidth,
+                    orgHeight = orgHeight,
+                    fixAspectRatio = cropperControlView!!.isFixAspectRatio,
+                    aspectRatioX = cropperControlView.aspectRatioX,
+                    aspectRatioY = cropperControlView.aspectRatioY,
+                    reqWidth = if (options != RequestSizeOptions.NONE) reqWidth else 0,
+                    reqHeight = if (options != RequestSizeOptions.NONE) reqHeight else 0,
+                    options = options,
+                ),
+            )
+
+            bitmapCroppingWorkerJob!!.get()!!.start()
+
+           // 프로그래스 보이게 업데이트
+            //setProgressBarVisibility()
+        }
+    }
+
+
     //크롭 윈도우가 변경될 때 호출되는 핸들러 함수입니다.
     private fun handleCropWindowChanged(inProgress: Boolean, animate: Boolean) {
         val width = width
@@ -495,8 +601,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                     newZoom = min(
                         mMaxZoom.toFloat(),
                         min(
-                            width / (cropRect.width() / mZoom / 0.8f),
-                            height / (cropRect.height() / mZoom / 0.8f),
+                            (width * mZoom * 0.8f) / cropRect.width(),
+                            (height * mZoom * 0.8f) / cropRect.height(),
                         ),
                     )
                 }
@@ -505,8 +611,8 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
                     newZoom = max(
                         1f,
                         min(
-                            width / (cropRect.width() / mZoom / 0.66f),
-                            height / (cropRect.height() / mZoom / 0.66f),
+                            (width * mZoom * 0.66f) / cropRect.width(),
+                            (height * mZoom * 0.66f) / cropRect.height(),
                             // 1. cropRect.width() / mZoom는 실제로 크롭된 이미지의 크기
                             // 2. 실제로 크롭된 이미지의 크기가 화면의 0.51 비율을 차지하는 배율 계산.
                         ),
@@ -534,6 +640,51 @@ class CropperXView(context: Context, attrs: AttributeSet? = null) : FrameLayout(
 
     override fun onCropWindowChanged(inProgress: Boolean) {
         handleCropWindowChanged(inProgress, true)
+    }
+
+    fun setOnCropImageCompleteListener(listener: OnCropCompleteListener?) {
+        mOnCropCompleteListener = listener
+    }
+
+    fun interface OnCropCompleteListener {
+
+        fun onCropImageComplete(view: CropperXView, result: CropResult)
+    }
+
+    open class CropResult internal constructor(
+        val bitmap: Bitmap?,
+        val error: Exception?,
+
+    ) {
+        val isSuccessful: Boolean
+            get() = error == null
+    }
+
+    enum class RequestSizeOptions {
+        NONE,
+
+        SAMPLING,
+
+        RESIZE_INSIDE,
+
+        RESIZE_FIT,
+
+        RESIZE_EXACT,
+    }
+
+    internal fun onImageCroppingAsyncComplete(result: BitmapCroppingWorkerJob.Result) {
+        bitmapCroppingWorkerJob = null
+
+        //프로그래스 안보이게 업데이트
+        //setProgressBarVisibility()
+        val listener = mOnCropCompleteListener
+        if (listener != null) {
+            val cropResult = CropResult(
+                bitmap = result.bitmap,
+                error = result.error,
+            )
+            listener.onCropImageComplete(this, cropResult)
+        }
     }
 }
 

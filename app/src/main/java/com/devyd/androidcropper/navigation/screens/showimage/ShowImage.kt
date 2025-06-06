@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavBackStackEntry
 import com.devyd.androidcropper.R
 import com.devyd.androidcropper.navigation.screens.common.AnimatedToolbar
 import com.devyd.androidcropper.navigation.screens.common.BottomToolbarModifier
@@ -39,12 +40,15 @@ import com.devyd.androidcropper.util.AniUtil
 import com.devyd.androidcropper.util.BitmapUtil
 import com.devyd.androidcropper.util.FileUtil
 import com.devyd.androidcropper.util.ImmutableList
+import com.devyd.androidcropper.util.LogUtil
 import com.devyd.androidcropper.util.SizeUtil
 import com.devyd.androidcropper.util.toast
 import com.devyd.androidcropper.viewmodel.ShowImageViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
@@ -90,7 +94,7 @@ fun ShowImage(
             isUndoPossible = viewModel.isUndoPossible(),
             isRedoPossible = viewModel.isRedoPossible(),
             undo = viewModel::undo,
-            redo = viewModel::redo
+            redo = viewModel::redo,
         )
     }
 
@@ -106,10 +110,10 @@ fun ShowImageLayout(
     isUndoPossible: Boolean,
     isRedoPossible: Boolean,
     undo: () -> Unit,
-    redo: () -> Unit
+    redo: () -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current // navigation backstackEntry
 
     val onCloseClicked = remember<() -> Unit> {
         {
@@ -126,14 +130,26 @@ fun ShowImageLayout(
 
     val onSaveClicked = remember<() -> Unit> {
         {
-            val imageFile = File(context.filesDir, "cropped_image.jpg")
-            BitmapUtil.saveBitmapToFile(bitmap, imageFile)
-            FileUtil.saveFileToGallery(
-                context = context,
-                file = imageFile,
-                onSuccess = { context.toast(R.string.image_saved_in_gallery_app) },
-                onFail = { context.toast(R.string.failed_to_save_image) }
-            )
+            lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                val imageFile = File(context.filesDir, "cropped_image.jpg")
+                BitmapUtil.saveBitmapToFile(bitmap, imageFile)
+
+                FileUtil.saveFileToGallery(
+                    context = context,
+                    file = imageFile,
+                    onSuccess = {
+                        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                            context.toast(R.string.image_saved_in_gallery_app)
+                        }
+
+                    },
+                    onFail = {
+                        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                            context.toast(R.string.failed_to_save_image)
+                        }
+                    }
+                )
+            }
         }
     }
 

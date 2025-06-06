@@ -1,6 +1,7 @@
 package com.devyd.androidcropper.viewmodel
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.devyd.androidcropper.state.ShowImageState
@@ -17,6 +18,11 @@ class NaviViewModel @Inject constructor(private val savedStateHandle: SavedState
     var redoStack: Stack<Bitmap> = Stack()
         private set
 
+    var inSampleSize : Int = 0
+        private set
+
+    var originalImageUri : Uri? = null
+        private set
 
     fun addToStack(
         bitmap: Bitmap
@@ -40,6 +46,14 @@ class NaviViewModel @Inject constructor(private val savedStateHandle: SavedState
             // 빈 비트맵을 리턴? 또는 에러처리.
         }
         return bitmapStack.peek()
+    }
+
+    fun setInSampleSize(size : Int){
+        inSampleSize = size
+    }
+
+    fun setOriginalImageUri(uri : Uri){
+        originalImageUri = uri
     }
 
 }

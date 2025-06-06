@@ -1,6 +1,8 @@
 package com.devyd.androidcropper.navigation.screens.cropperx
 
 import android.graphics.Bitmap
+import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
@@ -44,12 +46,15 @@ import kotlin.math.min
 fun CropperX(
     immutableBitmap: ImmutableBitmap,
     onDoneClicked: (Bitmap) -> Unit,
-    navigateBackPress: () -> Unit
+    navigateBackPress: () -> Unit,
+    inSampleSize : Int,
+    originalImageUri : Uri?,
 ) {
 
     val context = LocalContext.current
     val activity = LocalContext.current.getActivity()
     val lifecycleOwner = LocalLifecycleOwner.current
+
 
 
     val topToolbarHeight = SizeUtil.TOOLBAR_HEIGHT_SMALL
@@ -114,6 +119,14 @@ fun CropperX(
         }
     }
 
+    val cropCompleteListener = remember {
+        CropperXView.OnCropCompleteListener { view, result ->
+            result.bitmap?.let {
+                handleCropResult(it)
+            }
+        }
+    }
+
 
     val onCropOptionClicked = remember<(Int, CropOption) -> Unit> {
         { idx, cropOption ->
@@ -144,11 +157,17 @@ fun CropperX(
     val onCropVerticalHorizontalClicked = remember<(Boolean) -> Unit> {
         { isVertical ->
             val tmpCropOptions = cropOptions.copy(
-                aspectRatioX = if(isVertical) min(cropOptions.aspectRatioX, cropOptions.aspectRatioY) else max(cropOptions.aspectRatioX, cropOptions.aspectRatioY),
-                aspectRatioY = if(isVertical) max(cropOptions.aspectRatioX, cropOptions.aspectRatioY) else min(cropOptions.aspectRatioX, cropOptions.aspectRatioY)
+                aspectRatioX = if (isVertical) min(
+                    cropOptions.aspectRatioX,
+                    cropOptions.aspectRatioY
+                ) else max(cropOptions.aspectRatioX, cropOptions.aspectRatioY),
+                aspectRatioY = if (isVertical) max(
+                    cropOptions.aspectRatioX,
+                    cropOptions.aspectRatioY
+                ) else min(cropOptions.aspectRatioX, cropOptions.aspectRatioY)
             )
 
-            if(tmpCropOptions != cropOptions) cropOptions = tmpCropOptions
+            if (tmpCropOptions != cropOptions) cropOptions = tmpCropOptions
         }
     }
 
@@ -187,9 +206,10 @@ fun CropperX(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
+                        //setImageBitmap(immutableBitmap.bitmap , originalImageUri, inSampleSize)
                         setImageBitmap(immutableBitmap.bitmap)
                         setImageCropOptions(cropOptions)
-//                        setOnCropImageCompleteListener(cropCompleteListener)
+                        setOnCropImageCompleteListener(cropCompleteListener)
 
                     }
                 },
@@ -197,6 +217,7 @@ fun CropperX(
 
                     if (neededCrop) {
                         // 크롭 비동기 시작
+                        cropperXView.startCropImage()
                     }
                     cropperXView.setImageCropOptions(cropOptions)
                 }

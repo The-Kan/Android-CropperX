@@ -25,7 +25,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SelectImage(
     modifier: Modifier = Modifier,
-    onImageLoaded: (Bitmap) -> Unit
+    onImageLoaded: (Bitmap) -> Unit,
+    onSaveInSampleSize : (Int) -> Unit,
+    onSaveOriginalImageUri : (Uri) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -37,13 +39,14 @@ fun SelectImage(
     val onImageSelected = remember<(Uri?) -> Unit> {
         {
             imageUri = it
+            imageUri?.let { imageUri -> onSaveOriginalImageUri(imageUri) }
         }
     }
 
 
     LaunchedEffect(key1 = imageUri) {
         imageUri?.let {
-            BitmapUtil.getResizedBitmap(context, it)
+            BitmapUtil.getResizedBitmap(context, it, onSaveInSampleSize)
                 .flowOn(Dispatchers.IO) // 업 스트림 IO에서 진행.
                 .collect { bitmapStatus ->
                     resizedBitmapStatus = bitmapStatus
