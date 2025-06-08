@@ -26,7 +26,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.devyd.androidcropper.navigation.screens.common.AnimatedToolbar
+import com.devyd.androidcropper.navigation.screens.common.BottomToolbarHeightPaddingInEdgeToEdge
 import com.devyd.androidcropper.navigation.screens.common.BottomToolbarModifier
+import com.devyd.androidcropper.navigation.screens.common.TopToolbarHeightPaddingInEdgeToEdge
 import com.devyd.androidcropper.navigation.screens.common.TopToolbarModifier
 import com.devyd.androidcropper.navigation.screens.cropperx.bottomtoolbar.CropperXBottomToolBar
 import com.devyd.androidcropper.navigation.screens.cropperx.toptoolbar.CropperXTopToolBar
@@ -182,12 +184,14 @@ fun CropperX(
             visible = toolbarVisible,
             modifier = TopToolbarModifier(topToolBar)
         ) {
-            CropperXTopToolBar(
-                modifier = Modifier,
-                toolbarHeight = topToolbarHeight,
-                onCloseClicked = onCloseClicked,
-                onDoneClicked = onCropperXDoneClicked
-            )
+            TopToolbarHeightPaddingInEdgeToEdge {
+                CropperXTopToolBar(
+                    modifier = Modifier,
+                    toolbarHeight = topToolbarHeight,
+                    onCloseClicked = onCloseClicked,
+                    onDoneClicked = onCropperXDoneClicked
+                )
+            }
         }
 
         Box(
@@ -230,13 +234,15 @@ fun CropperX(
             visible = toolbarVisible,
             modifier = BottomToolbarModifier(bottomToolBar)
         ) {
-            CropperXBottomToolBar(
-                modifier = Modifier,
-                toolbarHeight = bottomToolbarHeight,
-                selectedOptionIdx = selectedOptionIdx,
-                onCropOptionClicked = onCropOptionClicked,
-                onCropVerticalHorizontalClicked = onCropVerticalHorizontalClicked
-            )
+            BottomToolbarHeightPaddingInEdgeToEdge {
+                CropperXBottomToolBar(
+                    modifier = Modifier,
+                    toolbarHeight = bottomToolbarHeight,
+                    selectedOptionIdx = selectedOptionIdx,
+                    onCropOptionClicked = onCropOptionClicked,
+                    onCropVerticalHorizontalClicked = onCropVerticalHorizontalClicked
+                )
+            }
 
         }
 

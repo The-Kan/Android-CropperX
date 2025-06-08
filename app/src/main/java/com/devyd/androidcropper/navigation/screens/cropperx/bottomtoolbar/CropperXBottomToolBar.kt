@@ -68,6 +68,7 @@ fun CropperXBottomToolBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(SizeUtil.TOOLBAR_HEIGHT_SMALL),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
 
@@ -148,7 +149,8 @@ fun CropperXBottomToolBar(
                 .fillMaxWidth()
                 .height(SizeUtil.TOOLBAR_HEIGHT_MEDIUM)
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             items(
                 count = cropOptionList.size,

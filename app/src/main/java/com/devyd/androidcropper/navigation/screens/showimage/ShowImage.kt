@@ -28,7 +28,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavBackStackEntry
 import com.devyd.androidcropper.R
 import com.devyd.androidcropper.navigation.screens.common.AnimatedToolbar
+import com.devyd.androidcropper.navigation.screens.common.BottomToolbarHeightPaddingInEdgeToEdge
 import com.devyd.androidcropper.navigation.screens.common.BottomToolbarModifier
+import com.devyd.androidcropper.navigation.screens.common.TopToolbarHeightPaddingInEdgeToEdge
 import com.devyd.androidcropper.navigation.screens.common.TopToolbarModifier
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarEvent
 import com.devyd.androidcropper.navigation.screens.showimage.bottomtoolbar.BottomToolbarItem
@@ -190,17 +192,19 @@ fun ShowImageLayout(
             visible = toolbarVisible
         )
         {
-            ShowImageTopToolBar(
-                modifier = Modifier,
-                isUndoPossible = isUndoPossible,
-                isRedoPossible = isRedoPossible,
-                isSavePossible = isUndoPossible,
-                undo = undo,
-                redo = redo,
-                save = onSaveClicked,
-                close = onCloseClicked,
-                toolBarHeight = topToolbarHeight,
-            )
+            TopToolbarHeightPaddingInEdgeToEdge {
+                ShowImageTopToolBar(
+                    modifier = Modifier,
+                    isUndoPossible = isUndoPossible,
+                    isRedoPossible = isRedoPossible,
+                    isSavePossible = isUndoPossible,
+                    undo = undo,
+                    redo = redo,
+                    save = onSaveClicked,
+                    close = onCloseClicked,
+                    toolBarHeight = topToolbarHeight,
+                )
+            }
         }
 
         val aspectRatio = remember(bitmap) {
@@ -233,12 +237,14 @@ fun ShowImageLayout(
             modifier = BottomToolbarModifier(bottomToolbar),
             visible = toolbarVisible
         ) {
-            ShowImageBottomToolBar(
-                modifier = Modifier,
-                bottomToolbarItemList = bottomToolbarItemList,
-                bottomToolbarHeight = bottomToolbarHeight,
-                bottomToolbarEvent = bottomToolbarEventWithAnim
-            )
+            BottomToolbarHeightPaddingInEdgeToEdge {
+                ShowImageBottomToolBar(
+                    modifier = Modifier,
+                    bottomToolbarItemList = bottomToolbarItemList,
+                    bottomToolbarHeight = bottomToolbarHeight,
+                    bottomToolbarEvent = bottomToolbarEventWithAnim
+                )
+            }
         }
 
     }
