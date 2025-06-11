@@ -25,6 +25,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.devyd.androidcropper.R
 import com.devyd.androidcropper.navigation.screens.common.AnimatedToolbar
 import com.devyd.androidcropper.navigation.screens.common.BottomToolbarHeightPaddingInEdgeToEdge
 import com.devyd.androidcropper.navigation.screens.common.BottomToolbarModifier
@@ -33,14 +34,20 @@ import com.devyd.androidcropper.navigation.screens.common.TopToolbarModifier
 import com.devyd.androidcropper.navigation.screens.cropperx.bottomtoolbar.CropperXBottomToolBar
 import com.devyd.androidcropper.navigation.screens.cropperx.toptoolbar.CropperXTopToolBar
 import com.devyd.androidcropper.util.AniUtil
+import com.devyd.androidcropper.util.AppUtil
+import com.devyd.androidcropper.util.BitmapUtil
+import com.devyd.androidcropper.util.FileUtil
 import com.devyd.androidcropper.util.ImmutableBitmap
 import com.devyd.androidcropper.util.SizeUtil
 import com.devyd.androidcropper.util.getActivity
+import com.devyd.androidcropper.util.toast
 import com.devyd.cropperx.crop.CropOptions
 import com.devyd.cropperx.view.CropperXView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 
@@ -114,9 +121,32 @@ fun CropperX(
     val handleCropResult = remember<(Bitmap) -> Unit> {
         {
             lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                toolbarVisible = false
-                delay(AniUtil.TOOLBAR_COLLAPSE_ANIM_DURATION.toLong())
-                onDoneClicked(it)
+                if (AppUtil.isOriginalEditSupported()){
+                    withContext(Dispatchers.IO){
+                        val imageFile = File(context.filesDir, "cropped_image.jpg")
+                        BitmapUtil.saveBitmapToFile(it, imageFile)
+
+                        FileUtil.saveFileToGallery(
+                            context = context,
+                            file = imageFile,
+                            onSuccess = {
+                                lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                    context.toast(R.string.image_saved_in_gallery_app)
+                                }
+
+                            },
+                            onFail = {
+                                lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                    context.toast(R.string.failed_to_save_image)
+                                }
+                            }
+                        )
+                    }
+                } else {
+                    toolbarVisible = false
+                    delay(AniUtil.TOOLBAR_COLLAPSE_ANIM_DURATION.toLong())
+                    onDoneClicked(it)
+                }
             }
         }
     }
@@ -210,8 +240,11 @@ fun CropperX(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
-                        //setImageBitmap(immutableBitmap.bitmap , originalImageUri, inSampleSize)
-                        setImageBitmap(immutableBitmap.bitmap)
+                        if(AppUtil.isOriginalEditSupported()){
+                            setImageBitmap(immutableBitmap.bitmap, originalImageUri, inSampleSize)
+                        } else {
+                            setImageBitmap(immutableBitmap.bitmap)
+                        }
                         setImageCropOptions(cropOptions)
                         setOnCropImageCompleteListener(cropCompleteListener)
 

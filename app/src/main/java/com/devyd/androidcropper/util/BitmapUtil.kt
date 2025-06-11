@@ -49,21 +49,13 @@ object BitmapUtil {
         onSaveInSampleSize: ((Int) -> Unit)? = null
     ): Bitmap? {
         BitmapFactory.Options().run {
-            // 아래 중복인것같은데 getWidthAndHeightFromUri랑
-//            inJustDecodeBounds = true
-//            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-//                BitmapFactory.decodeStream(inputStream, null, this)
-//            }
-
             val screenSize = AppUtil.getScreenWidthAndHeight(context)
             val bitmapSize = getWidthAndHeightFromUri(context, uri)
 
 
             inJustDecodeBounds = false
 
-            //inSampleSize = calculateInSampleSize(screenSize, bitmapSize)
-            // 잠시 원본 유지
-            inSampleSize = 1
+            inSampleSize = calculateInSampleSize(screenSize, bitmapSize)
 
             if (onSaveInSampleSize != null) {
                 onSaveInSampleSize(inSampleSize)
@@ -112,7 +104,7 @@ object BitmapUtil {
         onSaveInSampleSize: ((Int) -> Unit)? = null
     ) = flow {
         emit(BitmapStatus.Decoding)
-        delay(500) // just Test progress, It will be removed
+        //delay(500) // just Test progress, It will be removed
         val decodedBitmap = resizeBitmapFromRes(context, uri, onSaveInSampleSize)
         if (decodedBitmap != null) {
             emit(BitmapStatus.Success(decodedBitmap))

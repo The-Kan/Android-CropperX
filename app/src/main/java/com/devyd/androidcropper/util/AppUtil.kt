@@ -8,4 +8,12 @@ object AppUtil {
         val disPlayMetrics = context.resources.displayMetrics
         return Pair(disPlayMetrics.widthPixels, disPlayMetrics.heightPixels)
     }
+
+
+    // original edit or Resizing
+    private val isOriginalEdit = false
+    fun isOriginalEditSupported() : Boolean {
+        return isOriginalEdit
+    }
+
 }

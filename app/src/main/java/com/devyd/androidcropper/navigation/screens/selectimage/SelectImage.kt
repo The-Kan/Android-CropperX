@@ -2,6 +2,7 @@ package com.devyd.androidcropper.navigation.screens.selectimage
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,7 @@ fun SelectImage(
 
     val onImageSelected = remember<(Uri?) -> Unit> {
         {
+            Log.i("Deok", "사진 선택 완료")
             imageUri = it
             imageUri?.let { imageUri -> onSaveOriginalImageUri(imageUri) }
         }

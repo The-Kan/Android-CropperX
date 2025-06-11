@@ -1,6 +1,8 @@
 package com.devyd.androidcropper.navigation.screens.showimage
 
 import android.graphics.Bitmap
+import android.os.SystemClock
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,6 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -61,6 +66,13 @@ fun ShowImage(
     navigateCropperX: (ShowImageState) -> Unit,
     navigateSelectImage: () -> Unit,
 ) {
+    val observer = LifecycleEventObserver { _, event ->
+        if (event == Lifecycle.Event.ON_RESUME) {
+            Log.i("Deok", "ON_RESUME")
+        }
+    }
+    LocalLifecycleOwner.current.lifecycle.addObserver(observer)
+
 
     val viewModel: ShowImageViewModel = hiltViewModel()
 
