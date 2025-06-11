@@ -80,7 +80,7 @@ internal object BitmapUtils {
                     sampleMulti = sampleMulti,
                 )
             } catch (e: OutOfMemoryError) {
-
+                Log.i("Deok", "OOM 발생 1")
                 sampleMulti *= 2 // OOM이 발생하면 해상도를 2배씩 줄여나간다. 다운샘플링. 왜 2씩 곱했는가: 빠르고 효율적인 대응
                 if (sampleMulti > 16) {
                     throw RuntimeException(
@@ -146,6 +146,7 @@ internal object BitmapUtils {
                 }
             }
         } catch (e: OutOfMemoryError) {
+            Log.i("Deok", "OOM 발생 2")
             result?.recycle()
             throw e
         } catch (e: Exception) {
@@ -165,6 +166,7 @@ internal object BitmapUtils {
                 try {
                     return BitmapFactory.decodeStream(it, EMPTY_RECT, options)
                 } catch (e: OutOfMemoryError) {
+                    Log.i("Deok", "OOM 발생 3")
                     options.inSampleSize *= 2
                 }
             }
@@ -191,6 +193,10 @@ internal object BitmapUtils {
         )
 
         val matrix = Matrix()
+        matrix.postScale(
+            scale,
+            scale,
+        )
         var result = Bitmap.createBitmap(
             bitmap,
             rect.left,
@@ -200,6 +206,13 @@ internal object BitmapUtils {
             matrix,
             true,
         )
+
+        Log.i("Deok", "oom test 2생성된 비트맵 높이 너비 result = ${result.height} ${result.width}")
+        Log.i("Deok", "oom test 2생성된 비트맵 용량 크기 result = ${result.allocationByteCount}")
+        Log.i("Deok", "oom test 2생성된 비트맵 용량 크기 result(KByte) = ${result.allocationByteCount/1024}")
+        Log.i("Deok", "oom test 2생성된 비트맵 용량 크기 result(MByte) = ${result.allocationByteCount/(1024*1024)}")
+        LogUtil.logMemoryStats()
+
         if (result == bitmap) {
 
             result = bitmap.copy(bitmap.config!!, false)
@@ -262,6 +275,7 @@ internal object BitmapUtils {
 
 
             } catch (e: OutOfMemoryError) {
+                Log.i("Deok", "OOM 발생 4")
                 result.recycle()
                 throw e
             }
@@ -357,6 +371,7 @@ internal object BitmapUtils {
                                 options.inSampleSize,
                             )
                         } catch (e: OutOfMemoryError) {
+                            Log.i("Deok", "OOM 발생 5")
                             options.inSampleSize *= 2
                         }
                     } while (options.inSampleSize <= 512)
@@ -390,6 +405,7 @@ internal object BitmapUtils {
                 )
                 return BitmapSampled(cropBitmap, scale)
             } catch (e: OutOfMemoryError) {
+                Log.i("Deok", "OOM test 발생 6")
                 scale *= 2
                 if (scale > 8) {
                     throw e

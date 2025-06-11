@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.devyd.androidcropper.bitmap.BitmapStatus
 import com.devyd.androidcropper.util.BitmapUtil
+import com.devyd.androidcropper.util.LogUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -46,10 +47,12 @@ fun SelectImage(
 
     LaunchedEffect(key1 = imageUri) {
         imageUri?.let {
+            LogUtil.logMemoryStats(context)
             BitmapUtil.getResizedBitmap(context, it, onSaveInSampleSize)
                 .flowOn(Dispatchers.IO) // 업 스트림 IO에서 진행.
                 .collect { bitmapStatus ->
                     resizedBitmapStatus = bitmapStatus
+                    LogUtil.logMemoryStats(context)
                 }
         }
     }

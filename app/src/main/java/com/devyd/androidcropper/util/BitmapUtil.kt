@@ -6,8 +6,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import com.devyd.androidcropper.bitmap.BitmapStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
@@ -58,16 +61,46 @@ object BitmapUtil {
 
             inJustDecodeBounds = false
 
-            inSampleSize = calculateInSampleSize(screenSize, bitmapSize)
+            //inSampleSize = calculateInSampleSize(screenSize, bitmapSize)
+            // 잠시 원본 유지
+            inSampleSize = 1
+
             if (onSaveInSampleSize != null) {
                 onSaveInSampleSize(inSampleSize)
             }
 
             Log.i("Deok", "inSampleSize = ${inSampleSize}")
 
+//            val list = ArrayList<Bitmap>()
+//
+//
+//            CoroutineScope(Dispatchers.IO).launch{
+//                var cnt = 0
+//                repeat(100){
+//                    cnt++
+//                    delay(1000)
+//                    Log.i("Deok","oom test 1 cnt = ${cnt}")
+//                    val bitmap: Bitmap? = context.contentResolver.openInputStream(uri)?.use {
+//                        BitmapFactory.decodeStream(it, null, BitmapFactory.Options())
+//                    }
+//                    bitmap?.let { list.add(it) }
+//                    LogUtil.logMemoryStats()
+//                    Log.i("Deok","oom test 1 100개 끝")
+//                }
+//            }
+
+
+
+
+
             val bitmap: Bitmap? = context.contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it, null, this)
             }
+
+            Log.i("Deok", "oom test 1 생성된 비트맵 높이 너비 result = ${bitmap?.height} ${bitmap?.width}")
+            Log.i("Deok", "oom test 1 생성된 비트맵 용량 크기 result = ${bitmap?.allocationByteCount}")
+            Log.i("Deok", "oom test 1 생성된 비트맵 용량 크기 result(KByte) = ${bitmap!!.allocationByteCount/1024}")
+            Log.i("Deok", "oom test 1 생성된 비트맵 용량 크기 result(MByte) = ${bitmap!!.allocationByteCount/(1024*1024)}")
 
             return bitmap
         }
