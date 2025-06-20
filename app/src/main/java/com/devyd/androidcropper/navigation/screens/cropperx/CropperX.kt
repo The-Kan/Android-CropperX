@@ -8,8 +8,11 @@ import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -224,13 +228,26 @@ fun CropperX(
             }
         }
 
+
+        val topDP = with(LocalDensity.current) {
+            WindowInsets.statusBars.getTop(this).toDp()
+        }
+
+        val topPadding = topToolbarHeight + topDP
+
+        val bottomDp = with(LocalDensity.current) {
+            WindowInsets.navigationBars.getBottom(this).toDp()
+        }
+
+        val bottomPadding = bottomToolbarHeight + bottomDp
+
         Box(
             modifier = Modifier
                 .constrainAs(cropperX) {
                     width = Dimension.matchParent
                     height = Dimension.matchParent
                 }
-                .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
+                .padding(top = topPadding, bottom = bottomPadding)
         ) {
             AndroidView(
                 modifier = Modifier,

@@ -7,9 +7,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -223,6 +227,18 @@ fun ShowImageLayout(
             bitmap.width.toFloat() / bitmap.height.toFloat()
         }
 
+        val topDP = with(LocalDensity.current) {
+            WindowInsets.statusBars.getTop(this).toDp()
+        }
+
+        val topPadding = topToolbarHeight + topDP
+
+        val bottomDp = with(LocalDensity.current) {
+            WindowInsets.navigationBars.getBottom(this).toDp()
+        }
+
+        val bottomPadding = bottomToolbarHeight + bottomDp
+
         Box(
             modifier = Modifier
                 .constrainAs(image) {
@@ -233,7 +249,7 @@ fun ShowImageLayout(
                     width = Dimension.wrapContent
                     height = Dimension.wrapContent
                 }
-                .padding(top = topToolbarHeight, bottom = bottomToolbarHeight)
+                .padding(top = topPadding, bottom = bottomPadding)
                 .aspectRatio(aspectRatio)
         ) {
             Image(
